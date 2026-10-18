@@ -27,6 +27,7 @@ rm -rf "$BUNDLE_DIR"
 "$DOTNET_BIN" publish "$PROJECT_FILE" -c Release -o "$BUNDLE_DIR"
 cp "$SCRIPT_DIR/calculus.ini" "$BUNDLE_DIR/calculus.ini"
 printf '%s\n' "$NEXT_VERSION" > "$BUNDLE_DIR/version.txt"
+find "$BUNDLE_DIR/wwwroot" -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.webmanifest' \) -exec sed -i "s/__APP_VERSION__/$NEXT_VERSION/g" {} +
 
 echo "[3/6] Creating deployment zip..."
 rm -f "$STAGE_ZIP"

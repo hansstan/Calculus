@@ -22,7 +22,7 @@ app.MapPost("/api/result", async (ResultRequest request) =>
     var name = CleanName(request.Name);
     if (name.Length == 0 || request.Limit is not (10 or 20) || request.Seconds < 1 || request.Correct < 0 || request.Incorrect < 0)
         return Results.BadRequest(new { error = "Ungültige Ergebnisdaten." });
-    var entry = new RunRecord(DateTimeOffset.Now, request.Limit, request.Seconds, request.Correct, request.Incorrect);
+    var entry = new RunRecord(DateTimeOffset.Now, request.Limit, request.Seconds, request.Correct, request.Incorrect, name);
     var historyPath = UserFile(name, "-History.log");
     var userPath = UserFile(name, ".log");
     var json = JsonSerializer.Serialize(entry);
@@ -49,7 +49,24 @@ app.MapGet("/api/history/{name}", async (string name) =>
     if (name.Length == 0) return Results.BadRequest();
     var records = await ReadRecords(name);
     var best = records.OrderByDescending(x => x.Correct).ThenBy(x => x.Incorrect).FirstOrDefault();
-    return Results.Ok(new { history = records.OrderByDescending(x => x.At).Take(20), best });
+    return Results.Ok(new { history = records.OrderByDescending(x => x.At), best });
+});
+
+app.MapGet("/api/leaderboard", async () =>
+{
+    var users = new List<UserStanding>();
+    foreach (var path in Directory.EnumerateFiles(dataRoot, "*-History.log"))
+    {
+        var records = new List<RunRecord>();
+        foreach (var line in await File.ReadAllLinesAsync(path))
+            try { var item = JsonSerializer.Deserialize<RunRecord>(line); if (item is not null) records.Add(item); } catch (JsonException) { }
+        if (records.Count == 0) continue;
+        var fallbackName = Path.GetFileName(path)[..^"-History.log".Length].Replace('-', ' ');
+        var name = records.Select(x => x.Name).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)) ?? fallbackName;
+        var best = records.OrderByDescending(x => x.Correct).ThenBy(x => x.Incorrect).ThenBy(x => x.At).First();
+        users.Add(new UserStanding(name, records.Count, best));
+    }
+    return Results.Ok(users.OrderByDescending(x => x.Best.Correct).ThenBy(x => x.Best.Incorrect).ThenBy(x => x.Best.At));
 });
 
 app.MapFallbackToFile("index.html");
@@ -83,4 +100,5 @@ string FormatTime(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
 
 record UserRequest(string Name);
 record ResultRequest(string Name, int Limit, int Seconds, int Correct, int Incorrect);
-record RunRecord(DateTimeOffset At, int Limit, int Seconds, int Correct, int Incorrect);
+record RunRecord(DateTimeOffset At, int Limit, int Seconds, int Correct, int Incorrect, string? Name = null);
+record UserStanding(string Name, int Attempts, RunRecord Best);

@@ -1,0 +1,12 @@
+# deployd_app=calculus
+# deployd_path=/Calculus
+
+@calculus_no_slash path /Calculus
+redir @calculus_no_slash /Calculus/ 308
+
+handle_path /Calculus/* {
+    header Cache-Control "no-cache, no-store, must-revalidate"
+    reverse_proxy 127.0.0.1:7813 {
+        header_up X-Forwarded-Prefix /Calculus
+    }
+}

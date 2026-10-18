@@ -26,6 +26,7 @@ echo "[2/6] Publishing project..."
 rm -rf "$BUNDLE_DIR"
 "$DOTNET_BIN" publish "$PROJECT_FILE" -c Release -o "$BUNDLE_DIR"
 cp "$SCRIPT_DIR/calculus.ini" "$BUNDLE_DIR/calculus.ini"
+cp "$SCRIPT_DIR/calculus.caddy" "$BUNDLE_DIR/calculus.caddy"
 printf '%s\n' "$NEXT_VERSION" > "$BUNDLE_DIR/version.txt"
 find "$BUNDLE_DIR/wwwroot" -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.webmanifest' \) -exec sed -i "s/__APP_VERSION__/$NEXT_VERSION/g" {} +
 

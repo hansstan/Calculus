@@ -9,7 +9,7 @@ STAGE_ZIP="/srv/stage/${APP_NAME}.zip"
 APP_SERVICE="deployd-${APP_NAME}.service"
 PUBLIC_URL="http://hasta-home.com/Calculus/"
 VERSION_FILE="$SCRIPT_DIR/version.txt"
-DATA_DIR="/srv/www/calculus-data"
+DATA_DIR="/srv/www/data/calculus"
 DOTNET_BIN="${DOTNET_BIN:-dotnet}"
 
 CURRENT_VERSION="$(tr -d '[:space:]' < "$VERSION_FILE")"
@@ -57,7 +57,9 @@ if [[ ! -f "$UNIT_FILE" ]]; then
     echo "Deployd did not create $UNIT_FILE." >&2
     exit 1
 fi
-if ! grep -q '^Environment=CALCULUS_DATA=' "$UNIT_FILE"; then
+if grep -q '^Environment=CALCULUS_DATA=' "$UNIT_FILE"; then
+    sed -i "s|^Environment=CALCULUS_DATA=.*|Environment=CALCULUS_DATA=$DATA_DIR|" "$UNIT_FILE"
+else
     sed -i "/^Environment=DEPLOYD_APP_ROOT=/a Environment=CALCULUS_DATA=$DATA_DIR" "$UNIT_FILE"
 fi
 systemctl --user daemon-reload

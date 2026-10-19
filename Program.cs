@@ -1,9 +1,10 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
-var dataRoot = Environment.GetEnvironmentVariable("CALCULUS_DATA") ?? Path.Combine(AppContext.BaseDirectory, "Data");
+var dataRoot = Environment.GetEnvironmentVariable("CALCULUS_DATA") ?? "/srv/www/data/calculus";
 Directory.CreateDirectory(dataRoot);
 app.UseDefaultFiles();
 app.UseStaticFiles();
@@ -35,11 +36,35 @@ app.MapPost("/api/result", async (ResultRequest request) =>
     return Results.Ok(new { current = entry, best, history = records.OrderByDescending(x => x.At).Take(20) });
 });
 
+app.MapPost("/api/prime-result", async (PrimeResultRequest request) =>
+{
+    var name = CleanName(request.Name);
+    if (name.Length == 0 || request.Number is < 2 or > 200 || request.Factors.Length == 0)
+        return Results.BadRequest(new { error = "Ungültige Primfaktorzerlegung." });
+    long product = 1;
+    var previous = 0;
+    foreach (var factor in request.Factors)
+    {
+        if (!IsPrime(factor) || factor < previous) return Results.BadRequest(new { error = "Ungültige Primfaktorzerlegung." });
+        product *= factor;
+        previous = factor;
+    }
+    if (product != request.Number) return Results.BadRequest(new { error = "Die Faktoren ergeben nicht die Ausgangszahl." });
+    var timestamp = DateTimeOffset.Now;
+    var userPath = UserFile(name, ".log");
+    var details = $"Zahl {request.Number} = {string.Join(" × ", request.Factors)}";
+    var logTimestamp = timestamp.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss");
+    await File.AppendAllTextAsync(userPath, $"{logTimestamp} <Primfaktorzerlegung> {details}{Environment.NewLine}");
+    return Results.Ok(new { at = timestamp, name, action = "Primfaktorzerlegung", details });
+});
+
 app.MapDelete("/api/history/{name}", async (string name) =>
 {
     name = CleanName(name);
     if (name.Length == 0) return Results.BadRequest();
     await File.WriteAllTextAsync(UserFile(name, "-History.log"), string.Empty);
+    var timestamp = DateTimeOffset.Now.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss");
+    await File.AppendAllTextAsync(UserFile(name, ".log"), $"{timestamp} <History gelöscht>{Environment.NewLine}");
     return Results.Ok(new { history = Array.Empty<RunRecord>(), best = (RunRecord?)null });
 });
 
@@ -69,21 +94,51 @@ app.MapGet("/api/leaderboard", async () =>
     return Results.Ok(users.OrderByDescending(x => x.Best.Correct).ThenBy(x => x.Best.Incorrect).ThenBy(x => x.Best.At));
 });
 
+app.MapGet("/api/overview", async () =>
+{
+    var activities = new List<ActivityRecord>();
+    foreach (var path in Directory.EnumerateFiles(dataRoot, "*.log"))
+    {
+        var filename = Path.GetFileName(path);
+        if (filename.EndsWith("-History.log", StringComparison.OrdinalIgnoreCase)) continue;
+        var name = Path.GetFileNameWithoutExtension(path);
+        foreach (var line in await File.ReadAllLinesAsync(path))
+        {
+            var match = Regex.Match(line, @"^(?<at>\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}) <(?<action>[^>]+)>(?:\s*(?<details>.*))?$");
+            if (!match.Success || !DateTimeOffset.TryParseExact(match.Groups["at"].Value, "dd.MM.yyyy HH:mm:ss", CultureInfo.GetCultureInfo("de-DE"), DateTimeStyles.AssumeLocal, out var at)) continue;
+            activities.Add(new ActivityRecord(at, name, match.Groups["action"].Value, match.Groups["details"].Value));
+        }
+    }
+    return Results.Ok(activities.OrderBy(x => x.At).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase));
+});
+
 app.MapFallbackToFile("index.html");
 app.Run();
 
 string CleanName(string? value)
 {
     var name = Regex.Replace((value ?? "").Trim(), @"[^\p{L}\p{N}_ -]", "");
-    name = Regex.Replace(name, @"\s+", " ").Trim(' ', '.', '-');
+    name = Regex.Replace(name, @"\s+", " ").Trim(' ', '.', '-', '_');
     return name.Length > 32 ? name[..32] : name;
 }
 
 string UserFile(string name, string suffix)
 {
-    var slug = Regex.Replace(name, @"\s+", "-");
-    slug = Regex.Replace(slug, @"[^\p{L}\p{N}_-]+", "_").Trim('_');
-    return Path.Combine(dataRoot, slug + suffix);
+    var parts = Regex.Split(name, @"[\s_-]+").Where(part => part.Length > 0);
+    var pascalName = string.Concat(parts.Select(part =>
+    {
+        var lower = part.ToLowerInvariant();
+        return char.ToUpperInvariant(lower[0]) + lower[1..];
+    }));
+    return Path.Combine(dataRoot, pascalName + suffix);
+}
+
+bool IsPrime(int value)
+{
+    if (value < 2) return false;
+    for (var divisor = 2; divisor * divisor <= value; divisor++)
+        if (value % divisor == 0) return false;
+    return true;
 }
 
 async Task<List<RunRecord>> ReadRecords(string name)
@@ -100,5 +155,7 @@ string FormatTime(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
 
 record UserRequest(string Name);
 record ResultRequest(string Name, int Limit, int Seconds, int Correct, int Incorrect);
+record PrimeResultRequest(string Name, int Number, int[] Factors);
 record RunRecord(DateTimeOffset At, int Limit, int Seconds, int Correct, int Incorrect, string? Name = null);
 record UserStanding(string Name, int Attempts, RunRecord Best);
+record ActivityRecord(DateTimeOffset At, string Name, string Action, string Details);

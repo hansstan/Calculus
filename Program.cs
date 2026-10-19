@@ -39,7 +39,7 @@ app.MapPost("/api/result", async (ResultRequest request) =>
 app.MapPost("/api/prime-result", async (PrimeResultRequest request) =>
 {
     var name = CleanName(request.Name);
-    if (name.Length == 0 || request.Number is < 2 or > 15000 || request.Factors.Length is < 1 or > 14)
+    if (name.Length == 0 || request.Number is < 2 or > 5000 || request.Factors.Length is < 1 or > 14)
         return Results.BadRequest(new { error = "Ungültige Primfaktorzerlegung." });
     long product = 1;
     var previous = 0;

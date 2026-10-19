@@ -10,4 +10,4 @@ The script builds and publishes the .NET 10 app, adds `calculus.ini`, `calculus.
 
 The deployment route is `http://hasta-home.com/Calculus/` (domain `hasta-home.com`, path `/Calculus`).
 
-Each multiplication run appends a JSON record to `<Name>-History.log`. The readable activity log, `<Name>.log`, records completed activities and history deletions. Clearing a player's history truncates only the history file; the activity log remains available for the overall activity overview.
+Each multiplication run appends a JSON record to `<Name>-History.log`. Completed prime-factor exercises and timed prime-factor rounds are also recorded in the readable activity log, `<Name>.log`, along with history deletions. Clearing a player's history truncates only the history file; the activity log remains available for the overall activity overview.

@@ -39,13 +39,14 @@ app.MapPost("/api/result", async (ResultRequest request) =>
 app.MapPost("/api/prime-result", async (PrimeResultRequest request) =>
 {
     var name = CleanName(request.Name);
-    if (name.Length == 0 || request.Number is < 2 or > 200 || request.Factors.Length == 0)
+    if (name.Length == 0 || request.Number is < 2 or > 15000 || request.Factors.Length is < 1 or > 14)
         return Results.BadRequest(new { error = "Ungültige Primfaktorzerlegung." });
     long product = 1;
     var previous = 0;
     foreach (var factor in request.Factors)
     {
-        if (!IsPrime(factor) || factor < previous) return Results.BadRequest(new { error = "Ungültige Primfaktorzerlegung." });
+        if (!IsPrime(factor) || factor < previous || product > request.Number / factor)
+            return Results.BadRequest(new { error = "Ungültige Primfaktorzerlegung." });
         product *= factor;
         previous = factor;
     }
@@ -56,6 +57,18 @@ app.MapPost("/api/prime-result", async (PrimeResultRequest request) =>
     var logTimestamp = timestamp.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss");
     await File.AppendAllTextAsync(userPath, $"{logTimestamp} <Primfaktorzerlegung> {details}{Environment.NewLine}");
     return Results.Ok(new { at = timestamp, name, action = "Primfaktorzerlegung", details });
+});
+
+app.MapPost("/api/prime-session-result", async (PrimeSessionResultRequest request) =>
+{
+    var name = CleanName(request.Name);
+    if (name.Length == 0 || request.Seconds is < 60 or > 1800 || request.Correct < 0 || request.Incorrect < 0)
+        return Results.BadRequest(new { error = "Ungültige Rundendaten." });
+    var timestamp = DateTimeOffset.Now;
+    var logTimestamp = timestamp.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss");
+    var summary = $"Zeit {FormatTime(request.Seconds)} richtig {request.Correct} / falsch {request.Incorrect}";
+    await File.AppendAllTextAsync(UserFile(name, ".log"), $"{logTimestamp} <Primfaktorzerlegung> {summary}{Environment.NewLine}");
+    return Results.Ok(new { at = timestamp, name, action = "Primfaktorzerlegung", details = summary });
 });
 
 app.MapDelete("/api/history/{name}", async (string name) =>
@@ -171,6 +184,7 @@ string FormatTime(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
 record UserRequest(string Name);
 record ResultRequest(string Name, int Limit, int Seconds, int Correct, int Incorrect);
 record PrimeResultRequest(string Name, int Number, int[] Factors);
+record PrimeSessionResultRequest(string Name, int Seconds, int Correct, int Incorrect);
 record RunRecord(DateTimeOffset At, int Limit, int Seconds, int Correct, int Incorrect, string? Name = null);
 record UserStanding(string Name, int Attempts, RunRecord Best);
 record ActivityRecord(DateTimeOffset At, string Name, string Action, string Details, double? CorrectPerMinute, double? IncorrectPerMinute);

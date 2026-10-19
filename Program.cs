@@ -106,7 +106,22 @@ app.MapGet("/api/overview", async () =>
         {
             var match = Regex.Match(line, @"^(?<at>\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}) <(?<action>[^>]+)>(?:\s*(?<details>.*))?$");
             if (!match.Success || !DateTimeOffset.TryParseExact(match.Groups["at"].Value, "dd.MM.yyyy HH:mm:ss", CultureInfo.GetCultureInfo("de-DE"), DateTimeStyles.AssumeLocal, out var at)) continue;
-            activities.Add(new ActivityRecord(at, name, match.Groups["action"].Value, match.Groups["details"].Value));
+            var details = match.Groups["details"].Value;
+            var result = Regex.Match(details, @"Zeit (?<minutes>\d+):(?<seconds>\d{2}) richtig (?<correct>\d+) / falsch (?<incorrect>\d+)");
+            double? correctPerMinute = null;
+            double? incorrectPerMinute = null;
+            if (result.Success)
+            {
+                var seconds = int.Parse(result.Groups["minutes"].Value, CultureInfo.InvariantCulture) * 60
+                    + int.Parse(result.Groups["seconds"].Value, CultureInfo.InvariantCulture);
+                if (seconds > 0)
+                {
+                    var minutes = seconds / 60d;
+                    correctPerMinute = int.Parse(result.Groups["correct"].Value, CultureInfo.InvariantCulture) / minutes;
+                    incorrectPerMinute = int.Parse(result.Groups["incorrect"].Value, CultureInfo.InvariantCulture) / minutes;
+                }
+            }
+            activities.Add(new ActivityRecord(at, name, match.Groups["action"].Value, details, correctPerMinute, incorrectPerMinute));
         }
     }
     return Results.Ok(activities.OrderBy(x => x.At).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase));
@@ -158,4 +173,4 @@ record ResultRequest(string Name, int Limit, int Seconds, int Correct, int Incor
 record PrimeResultRequest(string Name, int Number, int[] Factors);
 record RunRecord(DateTimeOffset At, int Limit, int Seconds, int Correct, int Incorrect, string? Name = null);
 record UserStanding(string Name, int Attempts, RunRecord Best);
-record ActivityRecord(DateTimeOffset At, string Name, string Action, string Details);
+record ActivityRecord(DateTimeOffset At, string Name, string Action, string Details, double? CorrectPerMinute, double? IncorrectPerMinute);

@@ -76,7 +76,8 @@ async function loadOverview(){
     for(const day of groupActivitiesByDay(activities)){
       const heading=document.createElement('tr');heading.className='activity-day-row';
       const headingCell=document.createElement('th');headingCell.colSpan=5;headingCell.scope='rowgroup';headingCell.textContent=formatActivityDay(day[0].at);heading.append(headingCell);list.append(heading);
-      day.forEach((activity,index)=>{
+      const sortedDay=[...day].sort((a,b)=>a.name.localeCompare(b.name,'de',{sensitivity:'base'})||new Date(a.at)-new Date(b.at));
+      sortedDay.forEach((activity,index)=>{
         const row=document.createElement('tr');row.className=activityTone(activity.name);
         const date=document.createElement('td');date.textContent=`${index+1}. ${new Date(activity.at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}`;
         const name=document.createElement('td');name.textContent=activity.name;

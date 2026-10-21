@@ -11,3 +11,5 @@ The script builds and publishes the .NET 10 app, adds `calculus.ini`, `calculus.
 The deployment route is `http://hasta-home.com/Calculus/` (domain `hasta-home.com`, path `/Calculus`).
 
 Each multiplication run appends a JSON record to `<Name>-History.log`. Completed prime-factor exercises and timed prime-factor rounds are also recorded in the readable activity log, `<Name>.log`, along with the selected maximum number (4–15,000; default 5,000) and history deletions. Clearing a player's history truncates only the history file; the activity log remains available for the overall activity overview.
+
+Activity and player-history lists are grouped by local calendar date, with the newest day first and entries numbered chronologically within each day. Entries for Lena are highlighted pink and entries for Lukas blue. The prime-factor practice page displays divisibility rules for 2, 5, 3, and 9 above the exercise.

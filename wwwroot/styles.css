@@ -10,3 +10,31 @@
 .prime-results{margin-top:17px;border-top:1px solid #f0eef4;padding-top:13px;text-align:left}.prime-results h2{font:800 12px 'DM Sans';color:#67667c;margin:0 0 8px}#prime-result-list{max-height:220px;overflow-y:auto}.prime-result-empty{font-size:10px;color:#aaa8b6;margin:0;padding:8px 0}.prime-result-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0eef4;font-size:11px}.prime-result-row:last-child{border:0}.prime-result-row>span{font-weight:800;color:#5445b7}.prime-result-row>small{font-size:9px;color:#88879a;white-space:nowrap}
 @media(max-width:600px){.prime-settings-grid{grid-template-columns:1fr 1fr;gap:10px}.prime-settings-grid>.start-button{grid-column:1/-1;width:100%}.prime-input-row input{width:76px}}.prime-score-line b{font-weight:800}@media(max-width:600px){.prime-practice-top{flex-wrap:wrap}.prime-practice-top .timer{margin-left:auto}.prime-choice-list{grid-template-columns:repeat(5,minmax(35px,1fr));max-height:142px}.prime-duration-row{gap:7px}.prime-duration-row .start-button{padding:0 11px}}
 .activity-day{margin:0 0 9px}.activity-day:last-child{margin-bottom:0}.activity-day-heading{margin:0;padding:11px 4px 8px;border-bottom:1px solid #e8e5f0;color:#6356b5;font:800 12px 'DM Sans';letter-spacing:.3px}.activity-day-heading::before,.activity-day-heading::after{content:"";display:inline-block;width:16px;border-top:1px solid currentColor;vertical-align:middle;margin:0 7px}.activity-entry-number{font-weight:800;color:var(--activity-color,#77758e);white-space:nowrap}.activity-lena{--activity-color:#bd3e7d;--activity-tint:#fff0f7}.activity-lukas{--activity-color:#3474c5;--activity-tint:#edf5ff}.history-row.activity-entry{grid-template-columns:auto minmax(110px,1fr) auto auto;gap:12px;padding:11px 8px;background:var(--activity-tint,transparent)}.history-row.activity-entry .history-rates{grid-column:2/-1}.activity-table .activity-day-row th{background:#f5f2ff;border-top:1px solid #e8e5f0;padding:12px 14px;text-align:left;color:#6356b5;font-size:11px;letter-spacing:.3px;text-transform:none}.activity-table tr.activity-lena td{background:#fff4f9}.activity-table tr.activity-lukas td{background:#f2f7ff}.activity-table tr.activity-lena td:nth-child(2){color:#bd3e7d}.activity-table tr.activity-lukas td:nth-child(2){color:#3474c5}.leaderboard-row.activity-lena{background:#fff4f9}.leaderboard-row.activity-lukas{background:#f2f7ff}.leaderboard-row.activity-lena .leaderboard-name{color:#bd3e7d}.leaderboard-row.activity-lukas .leaderboard-name{color:#3474c5}.dialog-history-row.activity-entry{grid-template-columns:auto auto minmax(100px,1fr) auto;background:var(--activity-tint,transparent);padding:10px 6px}.prime-result-row.activity-entry{display:grid;grid-template-columns:auto minmax(110px,1fr) auto;background:var(--activity-tint,transparent);padding:8px 6px}.divisibility-rules{max-width:640px;margin:13px auto 5px;padding:13px 16px;border:1px solid #e7e2f7;border-radius:13px;background:#faf9ff;text-align:left}.divisibility-rules h2{margin:0 0 7px;color:#5d4bc0;font:800 12px 'DM Sans'}.divisibility-rules ol{margin:0;padding-left:20px;color:#77758c;font-size:10px;line-height:1.65}.divisibility-rules li+li{margin-top:3px}.divisibility-rules b{color:#4f42a7}@media(max-width:600px){.history-row.activity-entry{grid-template-columns:auto 1fr auto;gap:8px}.history-row.activity-entry .history-wrong{grid-column:3}.history-row.activity-entry .history-rates{grid-column:2/-1}.prime-result-row.activity-entry{grid-template-columns:auto 1fr}.prime-result-row.activity-entry small{grid-column:2}.dialog-history-row.activity-entry{grid-template-columns:auto auto 1fr}.dialog-history-row.activity-entry b{grid-column:3;grid-row:1/3}}
+.activity-day-heading{border-bottom:2px solid #dcd8ec;font-size:14px;font-weight:900}.activity-day-heading::before,.activity-day-heading::after{display:none}.activity-table .activity-day-row th{border-top:0;border-bottom:2px solid #dcd8ec;font-size:14px;font-weight:900}
+@media(max-width:600px){
+  .overview-screen{padding-left:12px;padding-right:12px}
+  .activity-panel{padding:12px 8px}
+  .activity-table-wrap{overflow:visible;border:0}
+  .activity-table{min-width:0;table-layout:fixed}
+  .activity-table thead,.activity-table tbody{display:block}
+  .activity-table thead{display:none}
+  .activity-table .activity-day-row{display:block}
+  .activity-table .activity-day-row th{display:block;padding:12px 5px 8px}
+  .activity-table tbody tr:not(.activity-day-row){display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"time name action" "details details details" "rate rate rate";column-gap:8px;row-gap:4px;padding:8px 5px;border-top:1px solid #f0eef4}
+  .activity-table tbody tr:not(.activity-day-row) td{display:block;min-width:0;border:0;padding:0;font-size:10px;line-height:1.4}
+  .activity-table tbody tr:not(.activity-day-row) td:nth-child(1){grid-area:time;white-space:nowrap}
+  .activity-table tbody tr:not(.activity-day-row) td:nth-child(2){grid-area:name;overflow-wrap:anywhere}
+  .activity-table tbody tr:not(.activity-day-row) td:nth-child(3){grid-area:action}
+  .activity-table tbody tr:not(.activity-day-row) td:nth-child(4){grid-area:details;overflow-wrap:anywhere}
+  .activity-table tbody tr:not(.activity-day-row) td:nth-child(5){grid-area:rate;white-space:normal;overflow-wrap:anywhere}
+  .activity-table tbody tr:not(.activity-day-row) .activity-message{grid-column:1/-1}
+  .history-list{padding:3px 8px}
+  .history-row.activity-entry{grid-template-columns:auto auto minmax(0,1fr);gap:5px 8px;padding:9px 3px}
+  .history-row.activity-entry .history-wrong{grid-column:3}
+  .history-row.activity-entry .history-rates{grid-column:2/-1;font-size:9px}
+  .dialog-history-list{overflow-x:hidden}
+  .dialog-history-row.activity-entry{grid-template-columns:auto auto minmax(0,1fr);gap:5px;padding:8px 3px;font-size:9px}
+  .dialog-history-row.activity-entry b{white-space:normal;font-size:9px}
+  .prime-result-row.activity-entry{grid-template-columns:auto minmax(0,1fr);gap:4px 8px;padding:8px 3px}
+  .prime-result-row.activity-entry small{grid-column:2;white-space:normal;overflow-wrap:anywhere}
+}

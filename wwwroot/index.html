@@ -16,7 +16,26 @@
         <form id="name-form" class="name-form"><label for="player-name">Wie heißt du?</label><div class="name-row"><span class="name-emoji">👋</span><input id="player-name" maxlength="32" autocomplete="given-name" placeholder="Dein Name" required><button class="round-arrow" aria-label="Weiter">→</button></div><small>Dein Name bleibt für deinen nächsten Besuch gespeichert.</small></form>
       </div>
       <div class="hero-art"><div class="orbit orbit-a" aria-hidden="true"></div><div class="orbit orbit-b" aria-hidden="true"></div><div class="math-card card-a" aria-hidden="true">7 × 8 <b>?</b></div><div class="math-card card-b" aria-hidden="true">3² <b>= 9</b></div><div class="math-card card-c" aria-hidden="true">12 + 5 <b>= ?</b></div><div class="planet" aria-hidden="true">✦</div><a id="overview-link" class="mascot-link" href="#overview" aria-label="Gesamtübersicht öffnen" title="Gesamtübersicht"><span class="mascot" aria-hidden="true">😎</span></a><span class="floaty f1" aria-hidden="true">＋</span><span class="floaty f2" aria-hidden="true">÷</span><span class="floaty f3" aria-hidden="true">×</span><span class="floaty f4" aria-hidden="true">＝</span></div>
-      <div class="task-pick" id="task-pick"><div class="section-kicker">WÄHLE DEIN ABENTEUER <span>↓</span></div><button id="multiplication-card" class="task-card"><span class="task-icon">✖</span><span class="task-copy"><b>Einmaleins</b><small>Blitzschnell rechnen und Rekorde sammeln</small></span><span class="task-tag">LOS GEHT’S</span><span class="task-chevron">›</span></button><button id="prime-card" class="task-card"><span class="task-icon prime-task-icon">✦</span><span class="task-copy"><b>Primfaktorzerlegung</b><small>Entdecke, aus welchen Primzahlen Zahlen bestehen</small></span><span class="task-tag prime-task-tag">NEU</span><span class="task-chevron">›</span></button><div class="coming-soon">Weitere Mathe-Abenteuer kommen bald <span>🚀</span></div></div>
+      <div class="task-pick" id="task-pick"><div class="section-kicker">WÄHLE DEIN ABENTEUER <span>↓</span></div><button id="multiplication-card" class="task-card"><span class="task-icon">✖</span><span class="task-copy"><b>Einmaleins</b><small>Blitzschnell rechnen und Rekorde sammeln</small></span><span class="task-tag">LOS GEHT’S</span><span class="task-chevron">›</span></button><button id="reverse-card" class="task-card"><span class="task-icon reverse-task-icon">↔</span><span class="task-copy"><b>1x1 Reverse</b><small>Finde die zwei Faktoren zur angezeigten Zahl</small></span><span class="task-tag reverse-task-tag">NEU</span><span class="task-chevron">›</span></button><button id="prime-card" class="task-card"><span class="task-icon prime-task-icon">✦</span><span class="task-copy"><b>Primfaktorzerlegung</b><small>Entdecke, aus welchen Primzahlen Zahlen bestehen</small></span><span class="task-tag prime-task-tag">NEU</span><span class="task-chevron">›</span></button><div class="coming-soon">Weitere Mathe-Abenteuer kommen bald <span>🚀</span></div></div>
+    </section>
+
+    <section id="reverse-learning" class="screen practice-screen hidden">
+      <button class="back-link" id="reverse-back-home">← Zurück zur Auswahl</button>
+      <div class="practice-heading"><div class="eyebrow"><span class="sparkle">✦</span> FAKTOREN-FINDER</div><h1>1x1 <span>Reverse</span></h1><p>Welche zwei Zahlen von 1 bis 9 ergeben zusammen die angezeigte Zahl?</p></div>
+      <div class="reverse-practice-card">
+        <div id="reverse-session-settings" class="reverse-session-settings">
+          <label for="reverse-duration">Trainingszeit</label>
+          <div class="duration-input"><input id="reverse-duration" type="number" min="1" max="30" value="2" inputmode="numeric"><span>Minuten</span></div>
+          <button id="reverse-start" class="start-button">Runde starten <span>→</span></button>
+        </div>
+        <div class="reverse-game-top"><span class="live-pill"><i></i> 1x1 REVERSE</span><div id="reverse-timer" class="timer">2:00</div></div>
+        <div class="reverse-target-label">Finde zwei passende Faktoren</div>
+        <div id="reverse-target" class="reverse-target">?</div>
+        <p id="reverse-prompt" class="reverse-prompt">Tippe nacheinander auf die zwei passenden Zahlen.</p>
+        <div id="reverse-factor-picks" class="reverse-factor-picks" aria-label="Faktor auswählen"></div>
+        <p id="reverse-feedback" class="reverse-feedback" aria-live="polite">Wähle zwei Zahlen. Die Reihenfolge ist egal.</p>
+        <div class="reverse-score-line"><span>✅ <b id="reverse-correct">0</b> richtig</span><span>💭 <b id="reverse-incorrect">0</b> falsch</span></div>
+      </div>
     </section>
 
     <section id="prime-learning" class="screen practice-screen hidden">

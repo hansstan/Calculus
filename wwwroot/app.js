@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const home = $('home'), practice = $('practice'), primeLearning = $('prime-learning'), overview = $('overview');
+const home = $('home'), practice = $('practice'), primeLearning = $('prime-learning'), reverseLearning = $('reverse-learning'), overview = $('overview');
 const apiBase = location.pathname.toLowerCase().startsWith('/calculus') ? '/Calculus' : '';
 let player = localStorage.getItem('calculus-player') || '';
 let duration = 120, remaining = 120, limit = 10, correct = 0, incorrect = 0, a = 1, b = 1, timerId = null, active = false, savedResult = null;
@@ -22,10 +22,11 @@ function groupActivitiesByDay(records) {
   for(const record of records){const key=activityDayKey(record.at);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(record);}
   return [...groups.entries()].sort(([a],[b])=>b.localeCompare(a)).map(([,items])=>items.sort((a,b)=>new Date(a.at)-new Date(b.at)));
 }
-function showPractice() { home.classList.add('hidden'); primeLearning.classList.add('hidden'); practice.classList.remove('hidden'); $('leaderboard-panel').classList.add('hidden'); $('hello-name').textContent = player || 'Profi'; loadHistory(); window.scrollTo({top:0,behavior:'smooth'}); }
-function showPrimeLearning() { home.classList.add('hidden'); practice.classList.add('hidden'); primeLearning.classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); }
-function showOverview() { stopClock(); home.classList.add('hidden'); practice.classList.add('hidden'); primeLearning.classList.add('hidden'); overview.classList.remove('hidden'); loadOverview(); window.scrollTo({top:0,behavior:'smooth'}); }
-function showHome() { stopClock(); practice.classList.add('hidden'); primeLearning.classList.add('hidden'); overview.classList.add('hidden'); home.classList.remove('hidden'); $('settings').classList.remove('hidden'); $('game').classList.add('hidden'); $('results').classList.add('hidden'); $('leaderboard-panel').classList.add('hidden'); window.scrollTo({top:0,behavior:'smooth'}); }
+function showPractice() { home.classList.add('hidden'); primeLearning.classList.add('hidden'); reverseLearning.classList.add('hidden'); practice.classList.remove('hidden'); $('leaderboard-panel').classList.add('hidden'); $('hello-name').textContent = player || 'Profi'; loadHistory(); window.scrollTo({top:0,behavior:'smooth'}); }
+function showPrimeLearning() { home.classList.add('hidden'); practice.classList.add('hidden'); reverseLearning.classList.add('hidden'); primeLearning.classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); }
+function showReverseLearning() { home.classList.add('hidden'); practice.classList.add('hidden'); primeLearning.classList.add('hidden'); overview.classList.add('hidden'); reverseLearning.classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); }
+function showOverview() { stopClock(); home.classList.add('hidden'); practice.classList.add('hidden'); primeLearning.classList.add('hidden'); reverseLearning.classList.add('hidden'); overview.classList.remove('hidden'); loadOverview(); window.scrollTo({top:0,behavior:'smooth'}); }
+function showHome() { stopClock(); cancelReverseSession(); practice.classList.add('hidden'); primeLearning.classList.add('hidden'); reverseLearning.classList.add('hidden'); overview.classList.add('hidden'); home.classList.remove('hidden'); $('settings').classList.remove('hidden'); $('game').classList.add('hidden'); $('results').classList.add('hidden'); $('leaderboard-panel').classList.add('hidden'); window.scrollTo({top:0,behavior:'smooth'}); }
 async function api(url, options={}) { const response = await fetch(`${apiBase}${url}`,{headers:{'Content-Type':'application/json'},...options}); if(!response.ok) throw new Error('Speichern gerade nicht möglich.'); return response.json(); }
 async function loadHistory() { try { const data = await api(`/api/history/${encodeURIComponent(player)}`); renderHistory((data.history || []).slice(0,20)); showBest(data.best); } catch { renderHistory([]); } }
 function showBest(best) { if(!best) { $('best-score').textContent='–'; $('best-date').textContent='Noch kein Rekord'; return; } $('best-score').textContent=`${best.correct} ✓`; $('best-date').textContent=new Date(best.at).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'}); }
@@ -50,6 +51,8 @@ function renderHistory(records) {
 }
 $('name-form').addEventListener('submit', async (event)=>{ event.preventDefault(); const entered=$('player-name').value.trim(); if(!entered)return; try { const data=await api('/api/user',{method:'POST',body:JSON.stringify({name:entered})}); player=data.name; } catch { player=entered.slice(0,32); } localStorage.setItem('calculus-player',player); $('task-pick').scrollIntoView({behavior:'smooth',block:'center'}); });
 $('multiplication-card').addEventListener('click',()=>{ if(!player){$('player-name').focus();$('player-name').scrollIntoView({behavior:'smooth',block:'center'});return;} showPractice(); });
+$('reverse-card').addEventListener('click',()=>{ if(!player){$('player-name').focus();$('player-name').scrollIntoView({behavior:'smooth',block:'center'});return;} showReverseLearning(); });
+$('reverse-back-home').addEventListener('click',showHome);
 $('prime-card').addEventListener('click',()=>{ if(!player){$('player-name').focus();$('player-name').scrollIntoView({behavior:'smooth',block:'center'});return;} showPrimeLearning(); });
 $('prime-back-home').addEventListener('click',showHome);
 $('overview-link').addEventListener('click',(event)=>{event.preventDefault();showOverview();});
@@ -143,3 +146,48 @@ function logPrimeExercise(number,factors){pendingPrimeLogs=pendingPrimeLogs.then
 function choosePrimeFactor(chosen){if(!primeActive||!primeSessionActive)return;const correctFactor=smallestPrimeFactor(primeCurrent);if(chosen!==correctFactor){primeIncorrect++;updatePrimeScore();$('prime-feedback').textContent=`Noch nicht! Der kleinste Primfaktor von ${primeCurrent} ist ${correctFactor}. Prüfe, welche Primzahl ohne Rest teilt.`;$('prime-feedback').className='prime-feedback wrong';return;}primeFactors.push(chosen);primeCurrent/=chosen;if(primeCurrent>1&&isPrimeNumber(primeCurrent)){primeFactors.push(primeCurrent);primeCurrent=1;}if(primeCurrent===1){primeCorrect++;updatePrimeScore();const factors=[...primeFactors],number=primeTarget;addPrimeResult(number,factors);logPrimeExercise(number,factors);$('prime-number').textContent=primeTarget;$('prime-progress').textContent='Zerlegung geschafft!';$('prime-prompt').textContent='Alle Faktoren sind Primzahlen. Super zerlegt!';$('prime-feedback').textContent='Richtig kombiniert – du hast die Primfaktorzerlegung gefunden! 🎉';$('prime-feedback').className='prime-feedback right';document.querySelectorAll('#prime-choice-list button').forEach(button=>button.disabled=true);startPrimeQuestion();return;}$('prime-number').textContent=primeCurrent;$('prime-progress').textContent=`Restzahl: ${primeCurrent}`;$('prime-prompt').textContent=`Welcher kleinste Primfaktor teilt ${primeCurrent} ohne Rest?`;$('prime-factor-line').textContent=`${primeTarget} = ${primeFactors.join(' × ')}${primeCurrent>1?` × ${primeCurrent}`:''}`;$('prime-feedback').textContent=`Genau! ${chosen} ist der kleinste Primfaktor. Weiter mit ${primeCurrent}.`;$('prime-feedback').className='prime-feedback right';}
 createPrimeChoices();
 $('prime-new-round').addEventListener('click',startPrimeSession);
+
+let reverseDuration=120,reverseRemaining=120,reverseTimerId=null,reverseActive=false,reverseSaving=false,reverseCorrect=0,reverseIncorrect=0,reverseTarget=0,reverseFirstFactor=null;
+function updateReverseClock(){$('reverse-timer').textContent=formatPrimeClock(reverseRemaining);$('reverse-timer').classList.toggle('urgent',reverseRemaining<=15);}
+function startReverseQuestion(preserveFeedback=false){
+  let first,second,product;
+  do{first=Math.floor(Math.random()*9)+1;second=Math.floor(Math.random()*9)+1;product=first*second;}while(product<9);
+  reverseTarget=product;reverseFirstFactor=null;$('reverse-target').textContent=reverseTarget;$('reverse-prompt').textContent='Tippe nacheinander auf die zwei passenden Zahlen.';if(!preserveFeedback){$('reverse-feedback').textContent='Wähle zwei Zahlen. Die Reihenfolge ist egal.';$('reverse-feedback').className='reverse-feedback';}
+  document.querySelectorAll('#reverse-factor-picks button').forEach(button=>{button.disabled=false;button.classList.remove('selected');});
+}
+function createReverseChoices(){
+  const choices=$('reverse-factor-picks');
+  for(let number=1;number<=9;number++){
+    const button=document.createElement('button');button.type='button';button.textContent=number;button.setAttribute('aria-label',`Faktor ${number}`);button.addEventListener('click',()=>chooseReverseFactor(number,button));choices.append(button);
+  }
+}
+function chooseReverseFactor(factor,button){
+  if(!reverseActive||reverseSaving)return;
+  if(reverseFirstFactor===null){reverseFirstFactor=factor;button.classList.add('selected');$('reverse-feedback').textContent=`${factor} ausgewählt – tippe den zweiten Faktor.`;$('reverse-feedback').className='reverse-feedback';return;}
+  const first=reverseFirstFactor;
+  if(first*factor===reverseTarget){reverseCorrect++;$('reverse-feedback').textContent=`Richtig: ${first} × ${factor} = ${reverseTarget}! 🎉`;$('reverse-feedback').className='reverse-feedback right';}
+  else{reverseIncorrect++;$('reverse-feedback').textContent=`Das passt nicht: ${first} × ${factor} = ${first*factor}. Nächste Zahl!`;$('reverse-feedback').className='reverse-feedback wrong';}
+  $('reverse-correct').textContent=reverseCorrect;$('reverse-incorrect').textContent=reverseIncorrect;startReverseQuestion(true);
+}
+function cancelReverseSession(){
+  if(reverseTimerId){clearInterval(reverseTimerId);reverseTimerId=null;}
+  if(reverseActive){reverseActive=false;reverseSaving=false;$('reverse-duration').disabled=false;$('reverse-session-settings').classList.remove('running');$('reverse-start').classList.remove('hidden');$('reverse-start').innerHTML='Runde starten <span>→</span>';}
+}
+async function finishReverseSession(){
+  if(!reverseActive||reverseSaving)return;
+  reverseActive=false;reverseSaving=true;if(reverseTimerId){clearInterval(reverseTimerId);reverseTimerId=null;}reverseRemaining=0;updateReverseClock();
+  $('reverse-target').textContent='✓';$('reverse-prompt').textContent='Die Trainingszeit ist vorbei!';$('reverse-feedback').textContent='Speichere deine Runde …';$('reverse-feedback').className='reverse-feedback';document.querySelectorAll('#reverse-factor-picks button').forEach(button=>button.disabled=true);
+  $('reverse-duration').disabled=false;$('reverse-session-settings').classList.remove('running');
+  try{await api('/api/reverse-session-result',{method:'POST',body:JSON.stringify({name:player,seconds:reverseDuration,correct:reverseCorrect,incorrect:reverseIncorrect})});$('reverse-feedback').textContent='Runde gespeichert! Starte gern noch eine.';$('reverse-feedback').className='reverse-feedback right';}
+  catch{$('reverse-feedback').textContent='Die Runde konnte nicht protokolliert werden. Prüfe deine Internetverbindung.';$('reverse-feedback').className='reverse-feedback wrong';}
+  finally{$('reverse-start').classList.remove('hidden');$('reverse-start').innerHTML='Nochmal spielen <span>↻</span>';reverseSaving=false;}
+}
+function startReverseSession(){
+  if(reverseActive||reverseSaving)return;
+  const minutes=Number($('reverse-duration').value);if(!Number.isInteger(minutes)||minutes<1||minutes>30){$('reverse-duration').focus();return;}
+  if(reverseTimerId)clearInterval(reverseTimerId);reverseDuration=minutes*60;reverseRemaining=reverseDuration;reverseCorrect=0;reverseIncorrect=0;reverseActive=true;reverseSaving=false;
+  $('reverse-correct').textContent='0';$('reverse-incorrect').textContent='0';$('reverse-duration').disabled=true;$('reverse-session-settings').classList.add('running');$('reverse-start').classList.add('hidden');$('reverse-timer').classList.remove('urgent');updateReverseClock();startReverseQuestion();
+  reverseTimerId=setInterval(()=>{reverseRemaining--;updateReverseClock();if(reverseRemaining<=0)finishReverseSession();},1000);
+}
+createReverseChoices();
+$('reverse-start').addEventListener('click',startReverseSession);
